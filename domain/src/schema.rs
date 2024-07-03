@@ -2,6 +2,10 @@
 
 pub mod sql_types {
     #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "token_type"))]
+    pub struct TokenType;
+
+    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "user_role"))]
     pub struct UserRole;
 }
@@ -13,6 +17,18 @@ diesel::table! {
         title -> Varchar,
         start_year -> Date,
         end_year -> Date,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::TokenType;
+
+    tokens (id) {
+        id -> Text,
+        #[sql_name = "type"]
+        type_ -> TokenType,
+        used -> Bool,
     }
 }
 
@@ -46,6 +62,7 @@ diesel::joinable!(user_passwords -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     promotions,
+    tokens,
     user_passwords,
     users,
 );
