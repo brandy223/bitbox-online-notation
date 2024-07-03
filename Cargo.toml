@@ -1,0 +1,17 @@
+[package]
+name = "online-project-notation"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [
+    "api",
+    "application",
+    "domain",
+    "infrastructure",
+    "shared",
+]
+
+[[bin]]
+name = "api"
+path = "api/src/bin/main.rs"
