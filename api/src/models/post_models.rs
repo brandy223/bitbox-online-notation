@@ -1,10 +1,11 @@
-use serde::{Deserialize};
 use garde::{Error, Validate};
-use application::database::users::{get_user_by_email, get_user_by_username};
-use infrastructure::init_pool;
 use once_cell::sync::Lazy as SyncLazy;
 use regex::Regex;
+use serde::Deserialize;
 use utoipa::ToSchema;
+
+use application::database::users::{get_user_by_email, get_user_by_username};
+use infrastructure::init_pool;
 
 #[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct RegisterUserPostModel {

@@ -1,14 +1,17 @@
 use std::rc::Rc;
 use std::task::{Context, Poll};
+
+use actix_web::{http, HttpMessage, web};
 use actix_web::body::BoxBody;
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
-use actix_web::{http, HttpMessage, web};
 use actix_web::error::ErrorUnauthorized;
 use futures_util::future::{LocalBoxFuture, ready, Ready};
 use futures_util::FutureExt;
+
 use application::database::users::get_user_by_id;
 use domain::models::users::User;
 use shared::app_state_model::AppState;
+
 use crate::handlers::authentication_handler::decode_token;
 
 pub struct AuthMiddleware<S> {
@@ -51,10 +54,15 @@ impl<S> Service<ServiceRequest> for AuthMiddleware<S>
 
         let app_state = req.app_data::<web::Data<AppState>>().unwrap();
 
+        let config = {
+            let config_guard = app_state.config.read();
+            config_guard.clone()
+        };
+
         // Decode token and handle errors
         let user_id = match decode_token(
             token.unwrap().as_str(),
-            app_state.config.as_ref(),
+            &config,
         ) {
             Ok(id) => id,
             Err(_) => {

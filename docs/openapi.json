@@ -410,6 +410,271 @@
         }
       }
     },
+    "/config/": {
+      "get": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "Get main app configuration",
+        "description": "This endpoint returns the main configuration of Bitbox.",
+        "operationId": "get_main_config_route",
+        "responses": {
+          "200": {
+            "description": "The main config of the application",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "Update the main configuration",
+        "description": "This endpoint updates the main configuration of the application.",
+        "operationId": "update_main_config_route",
+        "requestBody": {
+          "description": "The updated main configuration object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatedMainConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Main configuration updated successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "Database record"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config/{user_id}": {
+      "get": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "Get user config by user id",
+        "description": "This endpoint returns the configuration of a user (teacher) with the specified id.",
+        "operationId": "get_config_by_user_id_route",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "The user id to get the config from",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The current user configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "Database record"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "Update a user configuration with the user id",
+        "description": "This endpoint updates the configuration of a user (teacher) with the specified user id.",
+        "operationId": "update_user_config_route",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "The promotion of the user to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The updated user configuration object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatedUserConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The user configuration updated successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "Database record"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -492,7 +757,7 @@
           "Authentication"
         ],
         "summary": "Login a user",
-        "description": "This endpoint allows users to login to their account.",
+        "description": "This endpoint allows users to log in to their account.",
         "operationId": "login_route",
         "requestBody": {
           "description": "The credentials of the user to login",
@@ -544,6 +809,21 @@
   },
   "components": {
     "schemas": {
+      "AlertObject": {
+        "type": "object",
+        "required": [
+          "before_event",
+          "time"
+        ],
+        "properties": {
+          "before_event": {
+            "type": "boolean"
+          },
+          "time": {
+            "type": "string"
+          }
+        }
+      },
       "BadRequestError": {
         "type": "object",
         "required": [
@@ -559,33 +839,37 @@
         "default": null,
         "nullable": true
       },
-      "GenericResponse": {
-        "type": "object",
-        "required": [
-          "message"
-        ],
-        "properties": {
-          "message": {
-            "type": "string"
-          }
-        }
-      },
       "InternalError": {
         "default": null,
         "nullable": true
       },
-      "LoginUserPostModel": {
+      "JsonWrapper": {},
+      "MainConfig": {
         "type": "object",
         "required": [
-          "login",
-          "password"
+          "id",
+          "register",
+          "authorized_domains",
+          "updated_at"
         ],
         "properties": {
-          "login": {
-            "type": "string"
+          "authorized_domains": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "nullable": true
+            }
           },
-          "password": {
-            "type": "string"
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "register": {
+            "type": "boolean"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -607,6 +891,25 @@
           },
           "title": {
             "type": "string"
+          }
+        }
+      },
+      "NewUserConfig": {
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "properties": {
+          "alerts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertObject"
+            },
+            "nullable": true
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -666,28 +969,25 @@
           }
         }
       },
-      "RegisterUserPostModel": {
-        "type": "object",
-        "required": [
-          "email",
-          "username",
-          "password"
-        ],
-        "properties": {
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "username": {
-            "type": "string"
-          }
-        }
-      },
       "UnauthorizedError": {
         "default": null,
         "nullable": true
+      },
+      "UpdatedMainConfig": {
+        "type": "object",
+        "properties": {
+          "authorized_domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "register": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
       },
       "UpdatedPromotion": {
         "type": "object",
@@ -705,6 +1005,47 @@
           "title": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "UpdatedUserConfig": {
+        "type": "object",
+        "properties": {
+          "alerts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertObject"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "UserConfig": {
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "alerts",
+          "updated_at"
+        ],
+        "properties": {
+          "alerts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertObject"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },

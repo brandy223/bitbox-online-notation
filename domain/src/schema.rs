@@ -11,6 +11,15 @@ pub mod sql_types {
 }
 
 diesel::table! {
+    main_config (id) {
+        id -> Int4,
+        register -> Bool,
+        authorized_domains -> Array<Nullable<Text>>,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     promotions (id) {
         id -> Uuid,
         #[max_length = 255]
@@ -29,6 +38,15 @@ diesel::table! {
         #[sql_name = "type"]
         type_ -> TokenType,
         used -> Bool,
+    }
+}
+
+diesel::table! {
+    user_config (id) {
+        id -> Int4,
+        user_id -> Uuid,
+        alerts -> Array<Nullable<Json>>,
+        updated_at -> Timestamp,
     }
 }
 
@@ -58,11 +76,14 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(user_config -> users (user_id));
 diesel::joinable!(user_passwords -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    main_config,
     promotions,
     tokens,
+    user_config,
     user_passwords,
     users,
 );

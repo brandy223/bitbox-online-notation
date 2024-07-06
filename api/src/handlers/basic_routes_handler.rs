@@ -1,6 +1,6 @@
 use actix_web::{get, HttpResponse, Responder};
 
-use shared::response_models::GenericResponse;
+use crate::models::response_models::GenericResponse;
 
 /// Check if the API is online
 ///
