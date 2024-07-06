@@ -1,45 +1,12 @@
 use actix_web::{get, HttpResponse, put, ResponseError, web};
 use uuid::Uuid;
 
-use application::database::config::{get_config_by_user_id, get_main_config, update_main_config, update_user_config};
-use domain::models::config::{UpdatedMainConfig, UpdatedUserConfig};
+use application::database::config::{get_config_by_user_id, update_user_config};
+use domain::models::config::UpdatedUserConfig;
 use shared::app_state_model::AppState;
 use shared::error_models::{APIError, InternalError, ServerError};
 
 use crate::middlewares::auth::RequireAuth;
-
-/// Get main app configuration
-///
-/// This endpoint returns the main configuration of Bitbox.
-#[utoipa::path(
-    get,
-    path = "/",
-    tag = "Configuration",
-    context_path = "/config",
-    responses(
-        (status = 200, description = "The main config of the application", body = MainConfig),
-        (status = 401, description = "Unauthorized", body = UnauthorizedError, examples(
-            ("NoToken" = (value = json!("Token not provided"))),
-            ("InvalidToken" = (value = json!("Error")))
-        )),
-        (status = 500, description = "Internal Server Error", body = InternalError, example = json!("InternalError")),
-    )
-)]
-#[get("/")]
-pub async fn get_main_config_route(data: web::Data<AppState>) -> HttpResponse {
-    let result = web::block(move || {
-        let conn = data.database_pool.clone().as_ref().clone();
-        get_main_config(&conn)
-    }).await;
-
-    match result {
-        Ok(response) => match response {
-            Ok(config) => HttpResponse::Ok().json(config),
-            Err(err) => APIError::from(err).error_response()
-        },
-        Err(_) => ServerError::InternalError(InternalError).error_response(),
-    }
-}
 
 /// Get user config by user id
 ///
@@ -72,55 +39,6 @@ pub async fn get_config_by_user_id_route(data: web::Data<AppState>, id: web::Pat
     match result {
         Ok(response) => match response {
             Ok(user_config) => HttpResponse::Ok().json(user_config),
-            Err(err) => APIError::from(err).error_response(),
-        },
-        Err(_) => ServerError::InternalError(InternalError).error_response(),
-    }
-}
-
-/// Update the main configuration
-///
-/// This endpoint updates the main configuration of the application.
-#[utoipa::path(
-    put,
-    path = "/",
-    tag = "Configuration",
-    context_path = "/config",
-    request_body(
-        content = UpdatedMainConfig,
-        description = "The updated main configuration object",
-        content_type = "application/json"
-    ),
-    responses(
-        (status = 200, description = "Main configuration updated successfully"),
-        (status = 401, description = "Unauthorized", body = UnauthorizedError, examples(
-            ("NoToken" = (value = json!("Token not provided"))),
-            ("InvalidToken" = (value = json!("Error")))
-        )),
-        (status = 404, description = "Not Found", body = NotFoundError, example = json!("Database record")),
-        (status = 500, description = "Internal Server Error", body = InternalError, example = json!("InternalError")),
-    )
-)]
-#[put("/")]
-pub async fn update_main_config_route(data: web::Data<AppState>, updated_config: web::Json<UpdatedMainConfig>) -> HttpResponse {
-    let conn = data.database_pool.clone().as_ref().clone();
-    let result = web::block(move || {
-        update_main_config(&conn, updated_config.into_inner())
-    }).await;
-
-    match result {
-        Ok(response) => match response {
-            Ok(_) => {
-                let config_update = get_main_config(&data.database_pool.clone().as_ref().clone());
-                return match config_update {
-                    Ok(main_config) => {
-                        let mut config = data.config.write();
-                        config.main_config = main_config.clone();
-                        HttpResponse::Ok().finish()
-                    },
-                    Err(_) => ServerError::InternalError(InternalError).error_response(),
-                }
-            },
             Err(err) => APIError::from(err).error_response(),
         },
         Err(_) => ServerError::InternalError(InternalError).error_response(),
@@ -173,9 +91,7 @@ pub fn configurations_config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/config")
             .wrap(RequireAuth)
-            .service(get_main_config_route)
             .service(get_config_by_user_id_route)
-            .service(update_main_config_route)
             .service(update_user_config_route)
     );
 }

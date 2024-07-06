@@ -60,6 +60,7 @@ async fn main() -> std::io::Result<()> {
                     .configure(handlers::authentication_handler::auth_config)
                     .configure(handlers::promotions_handler::promotions_config)
                     .configure(handlers::configurations_handler::configurations_config)
+                    .configure(handlers::admin_handler::admin_config)
             )
             .default_service(web::route().to(not_found))
     })

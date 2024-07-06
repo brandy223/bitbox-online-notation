@@ -223,19 +223,18 @@ pub fn encode_token(info: &UserInfo, app_config: &Config) -> Result<String, APIE
         iat: now.timestamp() as usize,
         exp: expiration.timestamp() as usize,
         token_version: info.token_version,
-        user_role: info.role,
     };
     let header = Header::new(Algorithm::HS512);
     encode(&header, &claims, &EncodingKey::from_secret(app_config.jwt_config.secret.as_bytes()))
         .map_err(|_| APIError::ServerError(ServerError::InternalError(InternalError)))
 }
 
-pub fn decode_token(token: &str, app_config: &Config) -> Result<Uuid, APIError> {
+pub fn decode_token(token: &str, app_config: &Config) -> Result<(Uuid, i32), APIError> {
     let validation = Validation::new(Algorithm::HS512);
     let token_data = decode::<UserClaims>(token, &DecodingKey::from_secret(app_config.jwt_config.secret.as_bytes()), &validation)
         .map_err(|_| APIError::UserError(UserError::Unauthorized(UnauthorizedError)))?;
 
-    Ok(token_data.claims.sub)
+    Ok((token_data.claims.sub, token_data.claims.token_version))
 }
 
 pub fn auth_config(cfg: &mut web::ServiceConfig) {

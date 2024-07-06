@@ -60,7 +60,7 @@ impl<S> Service<ServiceRequest> for AuthMiddleware<S>
         };
 
         // Decode token and handle errors
-        let user_id = match decode_token(
+        let (user_id, token_version) = match decode_token(
             token.unwrap().as_str(),
             &config,
         ) {
@@ -84,16 +84,22 @@ impl<S> Service<ServiceRequest> for AuthMiddleware<S>
                 .await
             {
                 Ok(user) => match user {
-                    Ok(user) => user,
+                    Ok(user) => {
+                        // Check user token version
+                        if user.token_version != token_version {
+                            return Err(ErrorUnauthorized("Invalid token"))
+                        }
+                        user
+                    },
                     Err(_) => {
                         return Err(ErrorUnauthorized("User not found"))
                     }
                 },
-                Err(_) => { return Err(ErrorUnauthorized("nothing")) }
+                Err(_) => { return Err(ErrorUnauthorized("Error")) }
             };
 
             // Insert user information into request extensions
-            req.extensions_mut().insert::<User>(user);
+            req.extensions_mut().insert::<User>(user.clone());
 
             // Call the wrapped service to handle the request
             let res = srv.call(req).await?;
