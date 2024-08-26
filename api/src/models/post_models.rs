@@ -153,3 +153,10 @@ pub struct GradedStudentPostModel {
     pub mark: f64,
     pub comment: Option<String>
 }
+
+#[derive(Debug, Deserialize, ToSchema, Validate)]
+pub struct ValidateMFACodePostModel {
+    #[garde(length(min = 6, max = 6))]
+    #[garde(pattern(r"^[0-9]{6}$"))]
+    pub code: String,
+}

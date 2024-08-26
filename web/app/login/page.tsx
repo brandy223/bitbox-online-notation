@@ -28,7 +28,8 @@ const LoginPage: React.FC = () => {
             });
 
             if (response.ok) {
-                router.push("/");
+                let mfa_code_id = await response.json();
+                router.push(`/login/validate/${mfa_code_id}`);
             } else {
                 // Handle different error status codes
                 if (response.status === 401) {

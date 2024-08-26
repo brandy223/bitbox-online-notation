@@ -2480,8 +2480,8 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Login a user",
-        "description": "This endpoint allows users to log in to their account.",
+        "summary": "Login a user and send a code",
+        "description": "This endpoint allows users to init log in to their account and send a code to authenticate.",
         "operationId": "login_route",
         "requestBody": {
           "description": "The credentials of the user to login",
@@ -2489,6 +2489,74 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginUserPostModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "1st step of login successful",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "example": "Unauthorized"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login/code/{id}": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Validate MFA Code",
+        "description": "This endpoint allows users to validate their MFA code and finally log in into their account.",
+        "operationId": "validate_mfa_code_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The MFA code id to authenticate",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The MFA code to log in",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateMFACodePostModel"
               }
             }
           },
@@ -2505,14 +2573,23 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
-                },
-                "example": "Unauthorized"
+                }
               }
             }
           },
@@ -3447,6 +3524,17 @@
           "user_id": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "ValidateMFACodePostModel": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
           }
         }
       },

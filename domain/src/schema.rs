@@ -75,6 +75,17 @@ diesel::table! {
 }
 
 diesel::table! {
+    mfa_codes (id) {
+        id -> Uuid,
+        #[max_length = 16]
+        code -> Varchar,
+        iat -> Timestamp,
+        exp -> Timestamp,
+        user_id -> Uuid,
+    }
+}
+
+diesel::table! {
     use diesel::sql_types::*;
     use super::sql_types::ProjectState;
 
@@ -186,6 +197,7 @@ diesel::joinable!(groups_students -> groups (group_id));
 diesel::joinable!(groups_students -> students (student_id));
 diesel::joinable!(marks -> groups (group_id));
 diesel::joinable!(marks -> projects (project_id));
+diesel::joinable!(mfa_codes -> users (user_id));
 diesel::joinable!(projects -> promotions (promotion_id));
 diesel::joinable!(promotions -> users (teacher_id));
 diesel::joinable!(promotions_students -> promotions (promotion_id));
@@ -201,6 +213,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     groups_students,
     main_config,
     marks,
+    mfa_codes,
     projects,
     promotions,
     promotions_students,

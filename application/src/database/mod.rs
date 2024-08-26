@@ -9,3 +9,4 @@ pub mod groups;
 pub mod marks;
 pub mod students_tokens;
 pub mod done_alerts;
+pub mod mfa_codes;
