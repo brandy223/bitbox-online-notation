@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     username VARCHAR (255) NOT NULL,
     email VARCHAR (255) NOT NULL,
+    has_validated_email BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     role user_role NOT NULL DEFAULT 'user',

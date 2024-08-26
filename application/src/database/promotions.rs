@@ -1,10 +1,10 @@
 use diesel::internal::derives::multiconnection::chrono::NaiveDate;
 use diesel::prelude::*;
 use diesel::result::Error as DBError;
+use domain::models::promotions::{NewPromotion, Promotion, UpdatedPromotion};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
-use domain::models::promotions::{NewPromotion, Promotion, UpdatedPromotion};
 
 use infrastructure::DBPool;
 
@@ -15,10 +15,11 @@ pub struct PromotionSearchParams {
     end_year: Option<NaiveDate>,
 }
 
-pub fn get_all_promotions(conn: &DBPool) -> Result<Vec<Promotion>, DBError> {
+pub fn get_all_promotions_from_teacher_id(conn: &DBPool, teacher_id_: Uuid) -> Result<Vec<Promotion>, DBError> {
     use domain::schema::promotions::dsl::*;
 
-    promotions.load(&mut conn.get().unwrap())
+    promotions.filter(teacher_id.eq(teacher_id_))
+        .load::<Promotion>(&mut conn.get().unwrap())
 }
 
 pub fn get_promotion_by_id(conn: &DBPool, _id: Uuid) -> Result<Promotion, DBError> {
@@ -28,7 +29,7 @@ pub fn get_promotion_by_id(conn: &DBPool, _id: Uuid) -> Result<Promotion, DBErro
         .first(&mut conn.get().unwrap())
 }
 
-pub fn get_promotions_by_matching_date_and_title(conn: &DBPool, params: &PromotionSearchParams) -> Result<Vec<Promotion>, DBError> {
+pub fn get_promotions_by_matching_date_and_title(conn: &DBPool, params: &PromotionSearchParams, teacher_id_: Uuid) -> Result<Vec<Promotion>, DBError> {
     use domain::schema::promotions::dsl::*;
 
     let mut query = promotions.into_boxed();
@@ -45,7 +46,8 @@ pub fn get_promotions_by_matching_date_and_title(conn: &DBPool, params: &Promoti
         query = query.filter(end_year.le(_end_year));
     }
 
-    query.load::<Promotion>(&mut conn.get().unwrap())
+    query.filter(teacher_id.eq(teacher_id_))
+        .load::<Promotion>(&mut conn.get().unwrap())
 }
 
 pub fn create_promotion(conn: &DBPool, new_promotion: NewPromotion) -> Result<Uuid, DBError> {
@@ -62,10 +64,6 @@ pub fn create_promotion(conn: &DBPool, new_promotion: NewPromotion) -> Result<Uu
 pub fn update_promotion(conn: &DBPool, _id: Uuid, update_promotion: UpdatedPromotion) -> Result<(), DBError> {
     use domain::schema::promotions::dsl::*;
 
-    // Check if the promotion exists
-    promotions.filter(id.eq(_id))
-        .first::<Promotion>(&mut conn.get().unwrap())?;
-
     diesel::update(promotions.filter(id.eq(_id)))
         .set(&update_promotion)
         .execute(&mut conn.get().unwrap())?;
@@ -76,10 +74,6 @@ pub fn update_promotion(conn: &DBPool, _id: Uuid, update_promotion: UpdatedPromo
 pub fn delete_promotion(conn: &DBPool, _id: Uuid) -> Result<(), DBError> {
     use domain::schema::promotions::dsl::*;
 
-    // Check if the promotion exists
-    promotions.filter(id.eq(_id))
-        .first::<Promotion>(&mut conn.get().unwrap())?;
-
     diesel::delete(promotions.filter(id.eq(_id)))
         .execute(&mut conn.get().unwrap())?;
 
@@ -87,11 +81,12 @@ pub fn delete_promotion(conn: &DBPool, _id: Uuid) -> Result<(), DBError> {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
+    use super::*;
+    use crate::database::users::tests::test_create_user;
     use domain::models::promotions::{NewPromotion, UpdatedPromotion};
     use infrastructure::init_pool;
-    use super::*;
-    
+
     struct TestContext {
         conn: DBPool,
     }
@@ -108,30 +103,34 @@ mod tests {
         }
     }
 
-    fn test_create_promotion() -> Uuid {
+    pub fn test_create_promotion() -> (Uuid, Uuid) {
         let context = TestContext::new();
 
+        let teacher_id = test_create_user();
         let new_promotion = NewPromotion {
             title: "test".to_string(),
             start_year: NaiveDate::from_ymd(2021, 1, 1),
-            end_year: NaiveDate::from_ymd(2021, 12, 31)
+            end_year: NaiveDate::from_ymd(2021, 12, 31),
+            teacher_id,
         };
     
-        create_promotion(&context.conn, new_promotion).unwrap()
+        (create_promotion(&context.conn, new_promotion).unwrap(), teacher_id)
     }
 
     #[test]
-    fn test_get_all_promotions() {
+    fn test_get_all_promotions_from_teacher_id() {
         let context = TestContext::new();
 
-        get_all_promotions(&context.conn).unwrap();
+        let (_, teacher_id) = test_create_promotion();
+
+        get_all_promotions_from_teacher_id(&context.conn, teacher_id).unwrap();
     }
 
     #[test]
     fn test_get_promotion_by_id() {
         let context = TestContext::new();
 
-        let id = test_create_promotion();
+        let (id, _) = test_create_promotion();
 
         get_promotion_by_id(&context.conn, id).unwrap();
     }
@@ -140,18 +139,20 @@ mod tests {
     fn test_get_promotions_by_matching_date_and_title() {
         let context = TestContext::new();
 
+        let (_, teacher_id) = test_create_promotion();
+
         get_promotions_by_matching_date_and_title(&context.conn, &PromotionSearchParams {
             title: Some("test".to_string()),
             start_year: Some(NaiveDate::from_ymd(2021, 1, 1)),
             end_year: Some(NaiveDate::from_ymd(2021, 12, 31))
-        }).unwrap();
+        }, teacher_id).unwrap();
     }
 
     #[test]
     fn test_update_promotion() {
         let context = TestContext::new();
 
-        let id = test_create_promotion();
+        let (id, _) = test_create_promotion();
 
         let updated_promotion = UpdatedPromotion {
             title: Some("Re-test".to_string()),
@@ -166,7 +167,7 @@ mod tests {
     fn test_delete_promotion() {
         let context = TestContext::new();
 
-        let id = test_create_promotion();
+        let (id, _) = test_create_promotion();
 
         delete_promotion(&context.conn, id).unwrap();
     }

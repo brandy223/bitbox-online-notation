@@ -1,9 +1,9 @@
-use lettre::{Message, SmtpTransport, Transport};
 use lettre::message::header::ContentType;
+use lettre::{Message, SmtpTransport, Transport};
 use serde::Deserialize;
 
-use shared::error_models::{APIError, ServerError};
 use shared::error_models::InternalError;
+use shared::error_models::{APIError, ServerError};
 
 #[derive(Debug, Deserialize)]
 pub struct MailProps {
@@ -13,9 +13,9 @@ pub struct MailProps {
     pub body: String,
 }
 
-pub fn send_mail(smtp_transport: SmtpTransport, message: Message) -> Result<(), APIError> {
+pub fn send_mail(smtp_transport: &SmtpTransport, message: Message) -> Result<(), APIError> {
     smtp_transport.send(&message)
-        .map_err(|err| APIError::ServerError(ServerError::InternalError(InternalError)))?;
+        .map_err(|_| APIError::ServerError(ServerError::InternalError(InternalError)))?;
 
     Ok(())
 }

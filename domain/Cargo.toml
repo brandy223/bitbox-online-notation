@@ -11,3 +11,4 @@ diesel = { version = "2.2.1", features = ["postgres", "uuid", "chrono", "serde_j
 chrono = { version = "0.4.38", features = ["serde"] }
 uuid = { version = "1.9.1", features = ["v4", "serde"] }
 utoipa = { version = "4.2.3", features = ["chrono", "time", "uuid"] }
+diesel_as_jsonb = "1.0.1"

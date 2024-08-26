@@ -3,3 +3,8 @@ pub mod basic_routes_handler;
 pub mod promotions_handler;
 pub mod configurations_handler;
 pub mod admin_handler;
+pub mod projects_handler;
+pub mod students_handler;
+pub mod groups_handler;
+pub mod marks_handler;
+pub mod tokens_handler;

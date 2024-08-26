@@ -4,6 +4,7 @@ use domain::models::config::MainConfig;
 pub struct JwtConfig {
     pub secret: String,
     pub expires_in: String,
+    pub password_reset_expires_in: String,
 }
 
 #[derive(Debug, Clone)]
@@ -29,6 +30,7 @@ impl Config {
             jwt_config: JwtConfig {
                 secret: dotenvy::var("JWT_SECRET").expect("JWT_SECRET must be set"),
                 expires_in: dotenvy::var("JWT_EXPIRES_IN").expect("JWT_EXPIRES_IN must be set"),
+                password_reset_expires_in: dotenvy::var("JWT_PASSWORD_RESET_EXPIRES_IN").expect("JWT_PASSWORD_RESET_EXPIRES_IN must be set"),
             },
             smtp_config: SmtpConfig {
                 host: dotenvy::var("SMTP_HOST").expect("SMTP_HOST must be set"),

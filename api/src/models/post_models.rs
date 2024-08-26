@@ -1,11 +1,12 @@
+use application::database::users::{get_user_by_email, get_user_by_username};
+use chrono::NaiveDateTime;
 use garde::{Error, Validate};
+use infrastructure::init_pool;
 use once_cell::sync::Lazy as SyncLazy;
 use regex::Regex;
 use serde::Deserialize;
 use utoipa::ToSchema;
-
-use application::database::users::{get_user_by_email, get_user_by_username};
-use infrastructure::init_pool;
+use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct RegisterUserPostModel {
@@ -79,4 +80,76 @@ fn validate_password_policy(value: &str, _: &()) -> garde::Result {
 pub struct LoginUserPostModel {
     pub login: String,
     pub password: String,
+}
+
+#[derive(Debug, Deserialize, Validate, ToSchema)]
+pub struct ResetPasswordRequestPostModel {
+    #[garde(email)]
+    pub email: String,
+}
+
+#[derive(Debug, Deserialize, Validate, ToSchema)]
+pub struct ResetPasswordPostModel {
+    #[garde(length(min = 8, max = 64))]
+    #[garde(custom(validate_password_policy))]
+    pub password: String,
+}
+
+#[derive(Debug, Deserialize, Validate, ToSchema)]
+pub struct NewPromotionPostModel {
+    #[garde(length(max = 255))]
+    #[garde(alphanumeric)]
+    pub title: String,
+    #[garde(skip)]
+    pub start_year: chrono::NaiveDate,
+    #[garde(skip)]
+    pub end_year: chrono::NaiveDate,
+}
+
+#[derive(Debug, Deserialize, Validate, ToSchema)]
+pub struct NewProjectPostModel {
+    #[garde(length(max = 64))]
+    #[garde(alphanumeric)]
+    pub name: String,
+    #[garde(skip)]
+    pub description: Option<String>,
+    #[garde(skip)]
+    pub start_date: Option<NaiveDateTime>,
+    #[garde(skip)]
+    pub end_date: NaiveDateTime,
+    #[garde(skip)]
+    pub notation_period_duration: Option<i32>,
+}
+
+#[derive(Debug, Deserialize, Validate, ToSchema)]
+pub struct NewStudentPostModel {
+    #[garde(length(max = 64))]
+    #[garde(ascii)]
+    pub name: String,
+    #[garde(length(max = 64))]
+    #[garde(ascii)]
+    pub surname: String,
+    #[garde(length(max = 128))]
+    #[garde(email)]
+    pub email: String,
+}
+
+#[derive(Debug, Deserialize, Validate, ToSchema)]
+pub struct NewGroupPostModel {
+    #[garde(length(max = 64))]
+    #[garde(ascii)]
+    pub name: String,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct NewStudentsToGroup {
+    pub group_id: Uuid,
+    pub students_ids: Vec<Uuid>,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct GradedStudentPostModel {
+    pub student_id: Uuid,
+    pub mark: f64,
+    pub comment: Option<String>
 }

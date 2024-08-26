@@ -15,14 +15,125 @@
     }
   ],
   "paths": {
+    "/token/reset": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Request password reset token",
+        "description": "This endpoint allows users to request a password reset token which is returned in a cookie.",
+        "operationId": "get_reset_token_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "The reset token id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Responded with JWT",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/token/evaluation": {
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Request student token to evaluate his group",
+        "description": "This endpoint allows student to get the token to evaluate his group.",
+        "operationId": "get_evaluation_token_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "The evaluation token id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Responded with JWT",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "example": "UnauthorizedError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
     "/promotions/": {
       "get": {
         "tags": [
           "Promotions"
         ],
-        "summary": "Get all existing promotions",
-        "description": "This endpoint returns all promotions in the database.",
-        "operationId": "get_all_promotions_route",
+        "summary": "Get all existing promotions from the current teacher",
+        "description": "This endpoint returns all promotions from the current teacher in the database.",
+        "operationId": "get_all_promotions_from_current_teacher_route",
         "responses": {
           "200": {
             "description": "All the returned promotions objects",
@@ -80,7 +191,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPromotion"
+                "$ref": "#/components/schemas/NewPromotionPostModel"
               }
             }
           },
@@ -94,6 +205,21 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                },
+                "examples": {
+                  "InvalidTitle": {
+                    "value": "Invalid title"
+                  }
                 }
               }
             }
@@ -179,6 +305,17 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenError"
+                },
+                "example": "Forbidden"
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -227,7 +364,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatedPromotion"
+                "$ref": "#/components/schemas/UpdatedPromotionPutModel"
               }
             }
           },
@@ -236,6 +373,21 @@
         "responses": {
           "200": {
             "description": "Promotion updated successfully"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                },
+                "examples": {
+                  "InvalidTitle": {
+                    "value": "Invalid title"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
@@ -252,6 +404,17 @@
                     "value": "Token not provided"
                   }
                 }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenError"
+                },
+                "example": "Forbidden"
               }
             }
           },
@@ -320,6 +483,17 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenError"
+                },
+                "example": "Forbidden"
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -351,7 +525,7 @@
           "Promotions"
         ],
         "summary": "Get a promotion by title and date",
-        "description": "This endpoint returns the closest promotions to the specified title and date.",
+        "description": "get_all_promotions_route\nThis endpoint returns the closest promotions to the specified title and date.",
         "operationId": "search_promotions_route",
         "requestBody": {
           "description": "The search parameters for the promotions",
@@ -410,21 +584,36 @@
         }
       }
     },
-    "/config/": {
+    "/projects/promotion/{promotion_id}": {
       "get": {
         "tags": [
-          "Configuration"
+          "Projects"
         ],
-        "summary": "Get main app configuration",
-        "description": "This endpoint returns the main configuration of Bitbox.",
-        "operationId": "get_main_config_route",
+        "summary": "Get all projects from a promotion",
+        "description": "This endpoint returns all projects from a promotion in the database.",
+        "operationId": "get_projects_from_promotion_route",
+        "parameters": [
+          {
+            "name": "promotion_id",
+            "in": "path",
+            "description": "The promotion id to get the projects from",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "The main config of the application",
+            "description": "All the returned projects objects",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MainConfig"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Project"
+                  }
                 }
               }
             }
@@ -460,27 +649,71 @@
           }
         }
       },
-      "put": {
+      "post": {
         "tags": [
-          "Configuration"
+          "Projects"
         ],
-        "summary": "Update the main configuration",
-        "description": "This endpoint updates the main configuration of the application.",
-        "operationId": "update_main_config_route",
+        "summary": "Create a new project for a promotion",
+        "description": "This endpoint creates a new project for a promotion in the database.",
+        "operationId": "create_project_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The promotion id to create a project for",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "promotion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "requestBody": {
-          "description": "The updated main configuration object",
+          "description": "The project object to create",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatedMainConfig"
+                "$ref": "#/components/schemas/NewProjectPostModel"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "Main configuration updated successfully"
+          "201": {
+            "description": "The project was created successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                },
+                "examples": {
+                  "InvalidName": {
+                    "value": "Invalid name"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
@@ -501,13 +734,13 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "Project not found",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NotFoundError"
                 },
-                "example": "Database record"
+                "example": "NotFoundError"
               }
             }
           },
@@ -525,19 +758,19 @@
         }
       }
     },
-    "/config/{user_id}": {
+    "/projects/{id}": {
       "get": {
         "tags": [
-          "Configuration"
+          "Projects"
         ],
-        "summary": "Get user config by user id",
-        "description": "This endpoint returns the configuration of a user (teacher) with the specified id.",
-        "operationId": "get_config_by_user_id_route",
+        "summary": "Get a project",
+        "description": "This endpoint returns a project from the database.",
+        "operationId": "get_project_route",
         "parameters": [
           {
-            "name": "user_id",
+            "name": "id",
             "in": "path",
-            "description": "The user id to get the config from",
+            "description": "The project id to get",
             "required": true,
             "schema": {
               "type": "string",
@@ -545,6 +778,391 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "The returned project object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Update a project",
+        "description": "This endpoint updates a project in the database.",
+        "operationId": "update_project_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project id to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The project object to update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatedProjectPutModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The project was updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "default": null,
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                },
+                "examples": {
+                  "InvalidName": {
+                    "value": "Invalid name"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Delete a project",
+        "description": "This endpoint deletes a project in the database.",
+        "operationId": "delete_project_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project id to delete",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The project was deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "default": null,
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/marks/group-to-evaluate": {
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Request group of current student to evaluate",
+        "description": "This endpoint allows current student to get the group to evaluate.",
+        "operationId": "get_group_to_evaluate_route",
+        "responses": {
+          "200": {
+            "description": "Respond with group students to evaluate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinimalGroupStudents"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/marks/evaluate/group/{group_id}": {
+      "post": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Evaluate group",
+        "description": "This endpoint allows student to evaluate his group.",
+        "operationId": "evaluate_group_route",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "description": "The group id to evaluate",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The graded students of a group",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GradedStudentPostModel"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The group was evaluated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "default": null,
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config/user": {
+      "get": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "Get current user config",
+        "description": "This endpoint returns the current user (teacher) configuration.",
+        "operationId": "get_config_by_user_id_route",
         "responses": {
           "200": {
             "description": "The current user configuration",
@@ -602,21 +1220,9 @@
         "tags": [
           "Configuration"
         ],
-        "summary": "Update a user configuration with the user id",
-        "description": "This endpoint updates the configuration of a user (teacher) with the specified user id.",
+        "summary": "Update current user configuration",
+        "description": "This endpoint updates the configuration of the current user (teacher).",
         "operationId": "update_user_config_route",
-        "parameters": [
-          {
-            "name": "user_id",
-            "in": "path",
-            "description": "The promotion of the user to update",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
         "requestBody": {
           "description": "The updated user configuration object",
           "content": {
@@ -647,6 +1253,1124 @@
                     "value": "Token not provided"
                   }
                 }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "Database record"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/project/{id}": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Get all the groups and the students from a project",
+        "description": "This endpoint allows you to get all the groups and the corresponding students from a project in the database.",
+        "operationId": "get_groups_and_students_from_project_id_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project id to get the groups from",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All the returned groups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectGroupsGetModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Create a group and add it to an existing project",
+        "description": "This endpoint allows you to create a group and add it to an existing project in the database.",
+        "operationId": "create_group_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project id to add the group to",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The group to create",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewGroupPostModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The group has been created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                },
+                "examples": {
+                  "InvalidName": {
+                    "value": "Invalid name"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/project/{id}/students": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Get the students which aren't in a group for a project",
+        "description": "This endpoint returns all the students which aren't in a group for a chosen project",
+        "operationId": "get_students_without_group_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The project id to get the students from",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All the returned students",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Student"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{group_id}/student/{student_id}": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Returns the details of the 360 mark for a student in a group",
+        "description": "This endpoint returns the details of the 360 mark for a student in a group containing all the marks and comments given by the other students of the group.",
+        "operationId": "get_group_student_mark_details_route",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "description": "The group id to get the student from",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "student_id",
+            "in": "path",
+            "description": "The student id to get the details from",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The student details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentGroupMarkDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group or Student Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{group_id}/students": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Assigns students to a group",
+        "description": "This endpoint allows you to assign students to a group in the database.",
+        "operationId": "assign_students_to_group_route",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "description": "The group id to assign the students to",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The students ids to assign",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The students have been assigned to the group"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}": {
+      "put": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Update a group",
+        "description": "This endpoint allows you to update name or mark of a group in the database.",
+        "operationId": "update_group_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The group id to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The group to update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatedGroupPutModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The group has been updated"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                },
+                "examples": {
+                  "InvalidName": {
+                    "value": "Invalid name"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Delete a group",
+        "description": "This endpoint allows you to delete a group in the database.",
+        "operationId": "delete_group_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The group id to delete",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The group has been deleted"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/students/{id}": {
+      "get": {
+        "tags": [
+          "Students"
+        ],
+        "summary": "Get a student",
+        "description": "This endpoint allows you to get a student in the database.",
+        "operationId": "get_student_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The student id to get",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The returned student",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Students"
+        ],
+        "summary": "Update a student",
+        "description": "This endpoint allows you to update a student in the database.",
+        "operationId": "update_student_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The student id to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The student to update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatedStudentPutModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The student has been updated"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                },
+                "examples": {
+                  "InvalidEmail": {
+                    "value": "Invalid email"
+                  },
+                  "InvalidName": {
+                    "value": "Invalid name"
+                  },
+                  "InvalidSurname": {
+                    "value": "Invalid surname"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Students"
+        ],
+        "summary": "Delete a student",
+        "description": "This endpoint allows you to delete a student in the database.",
+        "operationId": "delete_student_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The student id to delete",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The student has been deleted"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/students/promotion/{id}": {
+      "get": {
+        "tags": [
+          "Students"
+        ],
+        "summary": "Get all students from a promotion",
+        "description": "This endpoint allows you to get all students from a promotion in the database.",
+        "operationId": "get_students_from_promotion_id_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The promotion id to get the students from",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All the returned students",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Promotion"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Students"
+        ],
+        "summary": "Create a student and add it to an existing promotion",
+        "description": "This endpoint allows you to create a student and add it to an existing promotion in the database.",
+        "operationId": "create_student_for_promotion_route",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The promotion id to add the student to",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The students to add",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/NewStudentPostModel"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The student(s) has been created and added to the promotion",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                },
+                "examples": {
+                  "InvalidEmail": {
+                    "value": "Invalid email"
+                  },
+                  "InvalidName": {
+                    "value": "Invalid name"
+                  },
+                  "InvalidSurname": {
+                    "value": "Invalid surname"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Promotion not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                },
+                "example": "NotFoundError"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/config": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Get main app configuration",
+        "description": "This endpoint returns the main configuration of Bitbox.",
+        "operationId": "get_main_config_route",
+        "responses": {
+          "200": {
+            "description": "The main config of the application",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MainConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Forbidden"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Update the main configuration",
+        "description": "This endpoint updates the main configuration of the application.",
+        "operationId": "update_main_config_route",
+        "requestBody": {
+          "description": "The updated main configuration object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatedMainConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Main configuration updated successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "value": "Error"
+                  },
+                  "NoToken": {
+                    "value": "Token not provided"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Forbidden"
               }
             }
           },
@@ -805,22 +2529,141 @@
           }
         }
       }
+    },
+    "/auth/reset-request": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Request a password reset",
+        "description": "This endpoint allows users to request a password reset.",
+        "operationId": "request_reset_password_route",
+        "requestBody": {
+          "description": "The email of the user to reset the password",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequestPostModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset request sent",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reset/password": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Reset user's password",
+        "description": "This endpoint allows users to reset their password with the given token.",
+        "operationId": "reset_password_route",
+        "requestBody": {
+          "description": "The new password of the user",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordPostModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                },
+                "example": "InternalError"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "AlertObject": {
+      "Alert": {
         "type": "object",
         "required": [
           "before_event",
-          "time"
+          "hours"
         ],
         "properties": {
           "before_event": {
             "type": "boolean"
           },
-          "time": {
-            "type": "string"
+          "hours": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -839,11 +2682,115 @@
         "default": null,
         "nullable": true
       },
+      "GenericResponse": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "GradedStudentPostModel": {
+        "type": "object",
+        "required": [
+          "student_id",
+          "mark"
+        ],
+        "properties": {
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "mark": {
+            "type": "number",
+            "format": "double"
+          },
+          "student_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Group": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "max_mark",
+          "project_id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mark": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "max_mark": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "GroupStudent": {
+        "type": "object",
+        "required": [
+          "group_id",
+          "student_id",
+          "max_mark"
+        ],
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "max_mark": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "student_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "student_mark": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        }
+      },
       "InternalError": {
         "default": null,
         "nullable": true
       },
-      "JsonWrapper": {},
+      "LoginUserPostModel": {
+        "type": "object",
+        "required": [
+          "login",
+          "password"
+        ],
+        "properties": {
+          "login": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
       "MainConfig": {
         "type": "object",
         "required": [
@@ -873,7 +2820,108 @@
           }
         }
       },
-      "NewPromotion": {
+      "MinimalGroupStudents": {
+        "type": "object",
+        "required": [
+          "group_id",
+          "students"
+        ],
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MinimalStudent"
+            }
+          }
+        }
+      },
+      "MinimalStudent": {
+        "type": "object",
+        "required": [
+          "student_id",
+          "name",
+          "surname"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "student_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "surname": {
+            "type": "string"
+          }
+        }
+      },
+      "NewGroup": {
+        "type": "object",
+        "required": [
+          "name",
+          "project_id"
+        ],
+        "properties": {
+          "max_mark": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "NewGroupPostModel": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "NewProjectPostModel": {
+        "type": "object",
+        "required": [
+          "name",
+          "end_date"
+        ],
+        "properties": {
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "notation_period_duration": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "NewPromotionPostModel": {
         "type": "object",
         "required": [
           "title",
@@ -894,6 +2942,45 @@
           }
         }
       },
+      "NewStudentPostModel": {
+        "type": "object",
+        "required": [
+          "name",
+          "surname",
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "surname": {
+            "type": "string"
+          }
+        }
+      },
+      "NewStudentsToGroup": {
+        "type": "object",
+        "required": [
+          "group_id",
+          "students_ids"
+        ],
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "students_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
       "NewUserConfig": {
         "type": "object",
         "required": [
@@ -903,7 +2990,7 @@
           "alerts": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AlertObject"
+              "$ref": "#/components/schemas/Alert"
             },
             "nullable": true
           },
@@ -924,13 +3011,99 @@
           }
         }
       },
+      "Project": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "start_date",
+          "end_date",
+          "notation_period_duration",
+          "promotion_id",
+          "state"
+        ],
+        "properties": {
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "notation_period_duration": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "promotion_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ProjectState"
+          }
+        }
+      },
+      "ProjectGroup": {
+        "type": "object",
+        "required": [
+          "group",
+          "students"
+        ],
+        "properties": {
+          "group": {
+            "$ref": "#/components/schemas/Group"
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentGroup"
+            }
+          }
+        }
+      },
+      "ProjectGroupsGetModel": {
+        "type": "object",
+        "required": [
+          "groups"
+        ],
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectGroup"
+            }
+          }
+        }
+      },
+      "ProjectState": {
+        "type": "string",
+        "enum": [
+          "NotStarted",
+          "InProgress",
+          "Finished",
+          "NotationFinished"
+        ]
+      },
       "Promotion": {
         "type": "object",
         "required": [
           "id",
           "title",
           "start_year",
-          "end_year"
+          "end_year",
+          "teacher_id"
         ],
         "properties": {
           "end_year": {
@@ -944,6 +3117,10 @@
           "start_year": {
             "type": "string",
             "format": "date"
+          },
+          "teacher_id": {
+            "type": "string",
+            "format": "uuid"
           },
           "title": {
             "type": "string"
@@ -969,9 +3146,166 @@
           }
         }
       },
+      "RegisterUserPostModel": {
+        "type": "object",
+        "required": [
+          "email",
+          "username",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "ResetPasswordPostModel": {
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "properties": {
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "ResetPasswordRequestPostModel": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "Student": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "surname",
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "surname": {
+            "type": "string"
+          }
+        }
+      },
+      "StudentGroup": {
+        "type": "object",
+        "required": [
+          "student"
+        ],
+        "properties": {
+          "mark": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "student": {
+            "$ref": "#/components/schemas/Student"
+          }
+        }
+      },
+      "StudentGroupMark": {
+        "type": "object",
+        "required": [
+          "grader",
+          "max_mark"
+        ],
+        "properties": {
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "grader": {
+            "$ref": "#/components/schemas/Student"
+          },
+          "mark": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "max_mark": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "StudentGroupMarkDetails": {
+        "type": "object",
+        "required": [
+          "student",
+          "marks"
+        ],
+        "properties": {
+          "marks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentGroupMark"
+            }
+          },
+          "student": {
+            "$ref": "#/components/schemas/Student"
+          }
+        }
+      },
       "UnauthorizedError": {
         "default": null,
         "nullable": true
+      },
+      "UpdatedGroup": {
+        "type": "object",
+        "properties": {
+          "mark": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "max_mark": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UpdatedGroupPutModel": {
+        "type": "object",
+        "properties": {
+          "mark": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        }
       },
       "UpdatedMainConfig": {
         "type": "object",
@@ -989,7 +3323,35 @@
           }
         }
       },
-      "UpdatedPromotion": {
+      "UpdatedProjectPutModel": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "notation_period_duration": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "UpdatedPromotionPutModel": {
         "type": "object",
         "properties": {
           "end_year": {
@@ -1008,13 +3370,47 @@
           }
         }
       },
+      "UpdatedStudent": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UpdatedStudentPutModel": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "UpdatedUserConfig": {
         "type": "object",
         "properties": {
           "alerts": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AlertObject"
+              "$ref": "#/components/schemas/Alert"
             },
             "nullable": true
           }
@@ -1032,7 +3428,12 @@
           "alerts": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AlertObject"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Alert"
+                }
+              ],
+              "nullable": true
             }
           },
           "id": {

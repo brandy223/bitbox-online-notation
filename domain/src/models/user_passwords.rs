@@ -1,10 +1,11 @@
-use diesel::{AsChangeset, Insertable, Queryable, Selectable};
+use diesel::{AsChangeset, Identifiable, Insertable, Queryable, Selectable};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Deserialize, Queryable, Selectable)]
+#[derive(Debug, Deserialize, Queryable, Selectable, Identifiable)]
 #[diesel(table_name = crate::schema::user_passwords)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[diesel(primary_key(user_id))]
 pub struct UserPassword {
     pub user_id: Uuid,
     pub password: String,

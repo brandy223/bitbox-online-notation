@@ -1,4 +1,4 @@
-use actix_web::{get, HttpResponse, put, ResponseError, web};
+use actix_web::{get, put, web, HttpResponse, ResponseError};
 
 use application::database::config::{get_main_config, update_main_config};
 use domain::models::config::UpdatedMainConfig;
@@ -6,14 +6,14 @@ use shared::app_state_model::AppState;
 use shared::error_models::{APIError, InternalError, ServerError};
 
 use crate::middlewares::admin::RequireAdminRole;
-use crate::middlewares::auth::RequireAuth;
+use crate::middlewares::auth::{RequireAuth, UserTokenValidator};
 
 /// Get main app configuration
 ///
 /// This endpoint returns the main configuration of Bitbox.
 #[utoipa::path(
     get,
-    path = "/config/",
+    path = "/config",
     tag = "Admin",
     context_path = "/admin",
     responses(
@@ -26,7 +26,7 @@ use crate::middlewares::auth::RequireAuth;
         (status = 500, description = "Internal Server Error", body = InternalError, example = json!("InternalError")),
     )
 )]
-#[get("/config/")]
+#[get("/config")]
 pub async fn get_main_config_route(data: web::Data<AppState>) -> HttpResponse {
     let result = web::block(move || {
         let conn = data.database_pool.clone().as_ref().clone();
@@ -47,7 +47,7 @@ pub async fn get_main_config_route(data: web::Data<AppState>) -> HttpResponse {
 /// This endpoint updates the main configuration of the application.
 #[utoipa::path(
     put,
-    path = "/config/",
+    path = "/config",
     tag = "Admin",
     context_path = "/admin",
     request_body(
@@ -66,7 +66,7 @@ pub async fn get_main_config_route(data: web::Data<AppState>) -> HttpResponse {
         (status = 500, description = "Internal Server Error", body = InternalError, example = json!("InternalError")),
     )
 )]
-#[put("/config/")]
+#[put("/config")]
 pub async fn update_main_config_route(data: web::Data<AppState>, updated_config: web::Json<UpdatedMainConfig>) -> HttpResponse {
     let conn = data.database_pool.clone().as_ref().clone();
     let result = web::block(move || {
@@ -96,7 +96,7 @@ pub fn admin_config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/admin")
             .wrap(RequireAdminRole)
-            .wrap(RequireAuth)
+            .wrap(RequireAuth::new(UserTokenValidator))
             .service(get_main_config_route)
             .service(update_main_config_route)
     );

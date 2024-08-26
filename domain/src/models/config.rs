@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use diesel::{AsChangeset, Identifiable, Insertable, Queryable, Selectable};
+use diesel_as_jsonb::AsJsonb;
 use serde::{Deserialize, Serialize};
-use serde_json::Value as Json;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -31,23 +31,20 @@ pub struct UpdatedMainConfig {
     pub authorized_domains: Option<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize, Serialize, ToSchema)]
-pub struct AlertObject {
+// #[sql_type(crate::schema::sql_types::alert)]
+#[derive(Debug, Serialize, Deserialize, Clone, ToSchema, AsJsonb)]
+pub struct Alert {
     pub before_event: bool,
-    pub time: chrono::NaiveTime,
+    pub hours: i8,
 }
 
-#[derive(Debug, Serialize, Deserialize, ToSchema)]
-pub struct JsonWrapper(serde_json::Value);
-
-#[derive(Debug, Serialize, Queryable, Identifiable, Selectable, ToSchema)]
+#[derive(Serialize, Queryable, Identifiable, Selectable, ToSchema)]
 #[diesel(table_name = crate::schema::user_config)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UserConfig {
     pub id: i32,
     pub user_id: Uuid,
-    #[schema(value_type = Vec<AlertObject>)]
-    pub alerts: Vec<Option<Json>>,
+    pub alerts: Vec<Option<Alert>>,
     pub updated_at: NaiveDateTime
 }
 
@@ -56,14 +53,12 @@ pub struct UserConfig {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewUserConfig {
     pub user_id: Uuid,
-    #[schema(value_type = Option<Vec<AlertObject>>)]
-    pub alerts: Option<Vec<Json>>,
+    pub alerts: Option<Vec<Alert>>,
 }
 
 #[derive(Debug, Deserialize, AsChangeset, ToSchema)]
 #[diesel(table_name = crate::schema::user_config)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdatedUserConfig {
-    #[schema(value_type = Option<Vec<AlertObject>>)]
-    pub alerts: Option<Vec<Json>>,
+    pub alerts: Option<Vec<Alert>>,
 }

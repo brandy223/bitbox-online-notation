@@ -11,16 +11,16 @@ pub fn get_user_by_id(conn: &DBPool, user_id: Uuid) -> Result<User, DBError> {
     users.filter(id.eq(user_id)).first(&mut conn.get().unwrap())
 }
 
-pub fn get_user_by_username(conn: &DBPool, _username: &str) -> Result<User, DBError> {
+pub fn get_user_by_username(conn: &DBPool, username_: &str) -> Result<User, DBError> {
     use domain::schema::users::dsl::*;
 
-    users.filter(username.eq(_username)).first(&mut conn.get().unwrap())
+    users.filter(username.eq(username_)).first(&mut conn.get().unwrap())
 }
 
-pub fn get_user_by_email(conn: &DBPool, _email: &str) -> Result<User, DBError> {
+pub fn get_user_by_email(conn: &DBPool, email_: &str) -> Result<User, DBError> {
     use domain::schema::users::dsl::*;
 
-    users.filter(email.eq(_email)).first(&mut conn.get().unwrap())
+    users.filter(email.eq(email_)).first(&mut conn.get().unwrap())
 }
 
 pub fn create_user(conn: &DBPool, new_user: NewUser) -> Result<Uuid, DBError> {
@@ -42,6 +42,16 @@ pub fn update_user(conn: &DBPool, user_id: Uuid, update_user: UpdatedUser) -> Re
     Ok(())
 }
 
+pub fn update_user_info(conn: &DBPool, user_id: Uuid, update_user: UpdatedUserInfo) -> Result<(), DBError> {
+    use domain::schema::users::dsl::*;
+
+    diesel::update(users.filter(id.eq(user_id)))
+        .set(&update_user)
+        .execute(&mut conn.get().unwrap())?;
+
+    Ok(())
+}
+
 pub fn delete_user(conn: &DBPool, user_id: Uuid) -> Result<(), DBError> {
     use domain::schema::users::dsl::*;
 
@@ -53,8 +63,8 @@ pub fn delete_user(conn: &DBPool, user_id: Uuid) -> Result<(), DBError> {
 
 #[cfg(test)]
 pub mod tests {
-    use infrastructure::init_pool;
     use dotenvy;
+    use infrastructure::init_pool;
 
     use super::*;
 
@@ -84,6 +94,8 @@ pub mod tests {
         let updated_user = UpdatedUser {
             username: Some("test-".to_string() + &user_id.to_string()),
             email: Some("test-".to_string() + &user_id.to_string()),
+            has_validated_email: None,
+            role: None,
             token_version: None,
         };
         update_user(&context.conn, user_id, updated_user).unwrap();
@@ -132,6 +144,8 @@ pub mod tests {
         let updated_user = UpdatedUser {
             username: None,
             email: Some("test".to_string() + &random),
+            has_validated_email: None,
+            role: None,
             token_version: None,
         };
 
@@ -139,6 +153,16 @@ pub mod tests {
 
         let user = get_user_by_id(&context.conn, user_id).unwrap();
         assert_eq!(user.email, "test".to_string() + &random);
+
+        let updated_user_info = UpdatedUserInfo {
+            username: Some("test".to_string() + &random),
+            email: None,
+        };
+
+        update_user_info(&context.conn, user_id, updated_user_info).unwrap();
+
+        let user = get_user_by_id(&context.conn, user_id).unwrap();
+        assert_eq!(user.username, "test".to_string() + &random);
     }
 
     #[test]

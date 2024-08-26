@@ -1,15 +1,18 @@
-
-use actix_web::{delete, get, HttpResponse, post, put, ResponseError, web};
-use uuid::Uuid;
-use application::database::promotions::{create_promotion, delete_promotion, get_all_promotions, get_promotion_by_id, get_promotions_by_matching_date_and_title, PromotionSearchParams, update_promotion};
+use crate::middlewares::auth::{RequireAuth, UserTokenValidator};
+use crate::models::post_models::NewPromotionPostModel;
+use crate::models::put_models::UpdatedPromotionPutModel;
+use actix_web::{delete, get, post, put, web, HttpMessage, HttpRequest, HttpResponse, ResponseError};
+use application::database::promotions::{create_promotion, delete_promotion, get_all_promotions_from_teacher_id, get_promotion_by_id, get_promotions_by_matching_date_and_title, update_promotion, PromotionSearchParams};
 use domain::models::promotions::{NewPromotion, UpdatedPromotion};
+use domain::models::users::User;
+use garde::Validate;
 use shared::app_state_model::AppState;
-use shared::error_models::{APIError, InternalError, ServerError};
-use crate::middlewares::auth::RequireAuth;
+use shared::error_models::{APIError, ForbiddenError, InternalError, ServerError, UserError};
+use uuid::Uuid;
 
-/// Get all existing promotions
+/// Get all existing promotions from the current teacher
 ///
-/// This endpoint returns all promotions in the database.
+/// This endpoint returns all promotions from the current teacher in the database.
 #[utoipa::path(
     get,
     path = "/",
@@ -25,10 +28,11 @@ use crate::middlewares::auth::RequireAuth;
     )
 )]
 #[get("/")]
-pub async fn get_all_promotions_route(data: web::Data<AppState>) -> HttpResponse {
+pub async fn get_all_promotions_from_current_teacher_route(data: web::Data<AppState>, req: HttpRequest) -> HttpResponse {
+    let teacher = req.extensions().get::<User>().cloned().unwrap();
     let result = web::block(move || {
         let conn = data.database_pool.clone().as_ref().clone();
-        get_all_promotions(&conn)
+        get_all_promotions_from_teacher_id(&conn, teacher.id)
     }).await;
 
     match result {
@@ -49,7 +53,7 @@ pub async fn get_all_promotions_route(data: web::Data<AppState>) -> HttpResponse
     tag = "Promotions",
     context_path = "/promotions",
     params(
-        ("id" = i32, description = "The promotion id to get")
+        ("id" = Uuid, description = "The promotion id to get")
     ),
     responses(
         (status = 200, description = "All the returned promotions objects", body = Promotion),
@@ -57,15 +61,22 @@ pub async fn get_all_promotions_route(data: web::Data<AppState>) -> HttpResponse
             ("NoToken" = (value = json!("Token not provided"))),
             ("InvalidToken" = (value = json!("Error")))
         )),
+        (status = 403, description = "Forbidden", body = ForbiddenError, example = json!("Forbidden")),
         (status = 404, description = "Not Found", body = NotFoundError, example = json!("Database record")),
         (status = 500, description = "Internal Server Error", body = InternalError, example = json!("InternalError")),
     )
 )]
 #[get("/{id}")]
-pub async fn get_promotion_by_id_route(data: web::Data<AppState>, id: web::Path<Uuid>) -> HttpResponse {
+pub async fn get_promotion_by_id_route(data: web::Data<AppState>, req: HttpRequest, id: web::Path<Uuid>) -> HttpResponse {
+    let teacher = req.extensions().get::<User>().cloned().unwrap();
     let result = web::block(move || {
         let conn = data.database_pool.clone().as_ref().clone();
-        get_promotion_by_id(&conn, id.into_inner())
+        let promotion = get_promotion_by_id(&conn, id.into_inner()).map_err(APIError::from)?;
+        if promotion.teacher_id != teacher.id {
+            return Err(APIError::UserError(UserError::Forbidden(ForbiddenError)));
+        }
+
+        Ok(promotion)
     }).await;
 
     match result {
@@ -78,7 +89,7 @@ pub async fn get_promotion_by_id_route(data: web::Data<AppState>, id: web::Path<
 }
 
 /// Get a promotion by title and date
-///
+///get_all_promotions_route
 /// This endpoint returns the closest promotions to the specified title and date.
 #[utoipa::path(
     get,
@@ -100,13 +111,14 @@ pub async fn get_promotion_by_id_route(data: web::Data<AppState>, id: web::Path<
     )
 )]
 #[get("/search")]
-pub async fn search_promotions_route(data: web::Data<AppState>, params: web::Json<PromotionSearchParams>) -> HttpResponse {
+pub async fn search_promotions_route(data: web::Data<AppState>, req: HttpRequest, params: web::Json<PromotionSearchParams>) -> HttpResponse {
     // Fix : Not working
     // Err : TypeError: Failed to execute 'fetch' on 'Window': Request with GET/HEAD method cannot have body.
+    let teacher = req.extensions().get::<User>().cloned().unwrap();
     let result = web::block(move || {
         let conn = data.database_pool.clone().as_ref().clone();
         let params = params.into_inner();
-        get_promotions_by_matching_date_and_title(&conn, &params)
+        get_promotions_by_matching_date_and_title(&conn, &params, teacher.id)
     }).await;
 
     match result {
@@ -127,12 +139,15 @@ pub async fn search_promotions_route(data: web::Data<AppState>, params: web::Jso
     tag = "Promotions",
     context_path = "/promotions",
     request_body(
-        content = NewPromotion,
+        content = NewPromotionPostModel,
         description = "The new promotion object to create",
         content_type = "application/json"
     ),
     responses(
         (status = 201, description = "Promotion created successfully", body = Uuid),
+        (status = 400, description = "Bad Request", body = BadRequestError, examples(
+            ("InvalidTitle" = (value = json!("Invalid title"))),
+        )),
         (status = 401, description = "Unauthorized", body = UnauthorizedError, examples(
             ("NoToken" = (value = json!("Token not provided"))),
             ("InvalidToken" = (value = json!("Error")))
@@ -141,10 +156,18 @@ pub async fn search_promotions_route(data: web::Data<AppState>, params: web::Jso
     )
 )]
 #[post("/")]
-pub async fn create_promotion_route(data: web::Data<AppState>, promotion: web::Json<NewPromotion>) -> HttpResponse {
+pub async fn create_promotion_route(data: web::Data<AppState>, req: HttpRequest, promotion: web::Json<NewPromotionPostModel>) -> HttpResponse {
+    let teacher = req.extensions().get::<User>().cloned().unwrap();
     let result = web::block(move || {
         let conn = data.database_pool.clone().as_ref().clone();
-        create_promotion(&conn, promotion.into_inner())
+        promotion.validate().map_err(APIError::from)?;
+        let new_promotion = NewPromotion {
+            title: promotion.title.clone(),
+            start_year: promotion.start_year,
+            end_year: promotion.end_year,
+            teacher_id: teacher.id,
+        };
+        create_promotion(&conn, new_promotion).map_err(APIError::from)
     }).await;
 
     match result {
@@ -165,28 +188,45 @@ pub async fn create_promotion_route(data: web::Data<AppState>, promotion: web::J
     tag = "Promotions",
     context_path = "/promotions",
     params(
-        ("id" = i32, description = "The promotion id to update")
+        ("id" = Uuid, description = "The promotion id to update")
     ),
     request_body(
-        content = UpdatedPromotion,
+        content = UpdatedPromotionPutModel,
         description = "The updated promotion object",
         content_type = "application/json"
     ),
     responses(
         (status = 200, description = "Promotion updated successfully"),
+        (status = 400, description = "Bad Request", body = BadRequestError, examples(
+            ("InvalidTitle" = (value = json!("Invalid title"))),
+        )),
         (status = 401, description = "Unauthorized", body = UnauthorizedError, examples(
             ("NoToken" = (value = json!("Token not provided"))),
             ("InvalidToken" = (value = json!("Error")))
         )),
+        (status = 403, description = "Forbidden", body = ForbiddenError, example = json!("Forbidden")),
         (status = 404, description = "Not Found", body = NotFoundError, example = json!("Database record")),
         (status = 500, description = "Internal Server Error", body = InternalError, example = json!("InternalError")),
     )
 )]
 #[put("/{id}")]
-pub async fn update_promotion_route(data: web::Data<AppState>, id: web::Path<Uuid>, promotion: web::Json<UpdatedPromotion>) -> HttpResponse {
+pub async fn update_promotion_route(data: web::Data<AppState>, req: HttpRequest, id: web::Path<Uuid>, promotion: web::Json<UpdatedPromotionPutModel>) -> HttpResponse {
+    let teacher = req.extensions().get::<User>().cloned().unwrap();
     let result = web::block(move || {
         let conn = data.database_pool.clone().as_ref().clone();
-        update_promotion(&conn, id.into_inner(), promotion.into_inner())
+        promotion.validate().map_err(APIError::from)?;
+
+        let promotion_ = get_promotion_by_id(&conn, id.into_inner()).map_err(APIError::from)?;
+        if promotion_.teacher_id != teacher.id {
+            return Err(APIError::UserError(UserError::Forbidden(ForbiddenError)));
+        }
+
+        let updated_promotion = UpdatedPromotion {
+            title: promotion.title.clone(),
+            start_year: promotion.start_year,
+            end_year: promotion.end_year,
+        };
+        update_promotion(&conn, promotion_.id, updated_promotion).map_err(APIError::from)
     }).await;
 
     match result {
@@ -207,7 +247,7 @@ pub async fn update_promotion_route(data: web::Data<AppState>, id: web::Path<Uui
     tag = "Promotions",
     context_path = "/promotions",
     params(
-        ("id" = i32, description = "The promotion id to delete")
+        ("id" = Uuid, description = "The promotion id to delete")
     ),
     responses(
         (status = 200, description = "Promotion deleted successfully"),
@@ -215,15 +255,23 @@ pub async fn update_promotion_route(data: web::Data<AppState>, id: web::Path<Uui
             ("NoToken" = (value = json!("Token not provided"))),
             ("InvalidToken" = (value = json!("Error")))
         )),
+        (status = 403, description = "Forbidden", body = ForbiddenError, example = json!("Forbidden")),
         (status = 404, description = "Not Found", body = NotFoundError, example = json!("Database record")),
         (status = 500, description = "Internal Server Error", body = InternalError, example = json!("InternalError")),
     )
 )]
 #[delete("/{id}")]
-pub async fn delete_promotion_route(data: web::Data<AppState>, id: web::Path<Uuid>) -> HttpResponse {
+pub async fn delete_promotion_route(data: web::Data<AppState>, req: HttpRequest, id: web::Path<Uuid>) -> HttpResponse {
+    let teacher = req.extensions().get::<User>().cloned().unwrap();
     let result = web::block(move || {
         let conn = data.database_pool.clone().as_ref().clone();
-        delete_promotion(&conn, id.into_inner())
+
+        let promotion_ = get_promotion_by_id(&conn, id.into_inner()).map_err(APIError::from)?;
+        if promotion_.teacher_id != teacher.id {
+            return Err(APIError::UserError(UserError::Forbidden(ForbiddenError)));
+        }
+
+        delete_promotion(&conn, promotion_.id).map_err(APIError::from)
     }).await;
 
     match result {
@@ -238,8 +286,8 @@ pub async fn delete_promotion_route(data: web::Data<AppState>, id: web::Path<Uui
 pub fn promotions_config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/promotions")
-            .wrap(RequireAuth)
-            .service(get_all_promotions_route)
+            .wrap(RequireAuth::new(UserTokenValidator))
+            .service(get_all_promotions_from_current_teacher_route)
             .service(get_promotion_by_id_route)
             .service(search_promotions_route)
             .service(create_promotion_route)

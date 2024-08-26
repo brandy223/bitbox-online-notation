@@ -19,6 +19,7 @@ pub struct User {
     pub id: Uuid,
     pub username: String,
     pub email: String,
+    pub has_validated_email: bool,
     pub created_at: chrono::NaiveDateTime,
     pub updated_at: chrono::NaiveDateTime,
     pub role: UserRole,
@@ -39,5 +40,15 @@ pub struct NewUser {
 pub struct UpdatedUser {
     pub username: Option<String>,
     pub email: Option<String>,
-    pub token_version: Option<i32>
+    pub has_validated_email: Option<bool>,
+    pub role: Option<UserRole>,
+    pub token_version: Option<i32>,
+}
+
+#[derive(Debug, Serialize, AsChangeset)]
+#[diesel(table_name = crate::schema::users)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct UpdatedUserInfo {
+    pub username: Option<String>,
+    pub email: Option<String>,
 }

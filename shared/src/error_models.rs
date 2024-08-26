@@ -16,7 +16,7 @@ pub struct ValidationError {
 
 #[derive(Debug, Error, ToSchema, ToResponse, Display)]
 pub struct NotFoundError {
-    resource: String,
+    pub resource: String,
 }
 
 #[derive(Debug, Error, ToSchema, ToResponse, Display)]

@@ -171,7 +171,10 @@ mod tests {
         let (_, user_id) = test_create_user_config();
         let updated_user_config = UpdatedUserConfig{
             alerts: Some(vec![
-                serde_json::json!({"type": "success", "message": "Test message"})
+                Alert{
+                    before_event: true,
+                    hours: 1,
+                }
             ])
         };
 

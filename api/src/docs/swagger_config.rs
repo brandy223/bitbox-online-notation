@@ -1,6 +1,6 @@
 use serde::Serialize;
-use utoipa::{Modify, OpenApi, openapi};
 use utoipa::openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme};
+use utoipa::{openapi, Modify, OpenApi};
 use utoipauto::utoipauto;
 
 #[derive(Debug, Serialize)]
@@ -23,7 +23,7 @@ impl Modify for Security {
 }
 
 #[utoipauto(paths =
-    "api/src/handlers, ./shared/src from shared, ./domain/src/models from domain, ./application/src from application"
+    "api/src, ./shared/src from shared, ./domain/src/models from domain, ./application/src from application"
 )]
 #[derive(OpenApi)]
 #[openapi(
