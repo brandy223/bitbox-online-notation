@@ -40,12 +40,14 @@ const GroupComponent: React.FC<{
     };
 
     return (
-        <div className="relative px-4 py-2 border rounded-lg shadow-sm hover:shadow-md transition-shadow group flex-col">
-            <div className="flex-row">
-                <p>{info.group.name.toUpperCase()}</p>
-                {withMarks && !editMode && <p>{groupMark}</p>}
+        <div className="relative p-6 border rounded-lg shadow-lg hover:shadow-xl transition-shadow bg-white flex flex-col space-y-4">
+            <div className="flex justify-between items-center">
+                <p className="text-xl font-semibold text-gray-800">{info.group.name.toUpperCase()}</p>
+                {withMarks && !editMode && (
+                    <p className="text-lg font-bold text-gray-700">{groupMark}</p>
+                )}
             </div>
-            <div>
+            <div className="space-y-2">
                 {info.students.map((student) => (
                     <MinimalStudentComponent
                         key={student.student.id}
@@ -60,7 +62,7 @@ const GroupComponent: React.FC<{
             {projectState === ProjectState.Finished && (
                 <div className="mt-4">
                     {editMode ? (
-                        <form onSubmit={handleMarkSubmit}>
+                        <form onSubmit={handleMarkSubmit} className="flex items-center space-x-4">
                             <input
                                 type="number"
                                 value={groupMark}
@@ -68,29 +70,33 @@ const GroupComponent: React.FC<{
                                 min="0"
                                 max="20"
                                 required
-                                className="border rounded px-2 py-1"
+                                className="border rounded-lg px-3 py-2 w-24 text-gray-700 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400"
                             />
-                            <button type="submit" className="ml-2 px-4 py-1 bg-blue-500 text-white rounded" disabled={markSubmitting}>
+                            <button
+                                type="submit"
+                                className="px-4 py-2 bg-gray-700 text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition"
+                                disabled={markSubmitting}
+                            >
                                 {markSubmitting ? "Submitting..." : "Submit"}
                             </button>
                             <button
                                 type="button"
-                                className="ml-2 px-4 py-1 bg-gray-500 text-white rounded"
+                                className="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 transition"
                                 onClick={() => setEditMode(false)}
                                 disabled={markSubmitting}
                             >
                                 Cancel
                             </button>
-                            {markError && <p className="text-red-500">{markError}</p>}
                         </form>
                     ) : (
                         <button
-                            className="mt-2 px-4 py-1 bg-blue-500 text-white rounded"
+                            className="mt-2 px-4 py-2 bg-gray-700 text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition"
                             onClick={() => setEditMode(true)}
                         >
                             Edit Mark
                         </button>
                     )}
+                    {markError && <p className="text-red-500 mt-2">{markError}</p>}
                 </div>
             )}
         </div>

@@ -73,12 +73,10 @@ const PromotionDetails: React.FC<{ promotion: Promotion }> = ({promotion}) => {
     )
 }
 
-
-
 const ProjectComponent: React.FC<{ project: Project }> = ({project}) => {
     return (
         <Link href={`/projects/${project.id}`}>
-            <div className="px-4 py-2">
+            <div className="px-4 py-2 hover:bg-gray-100 text-gray-600">
                 <p>{capitalizeFirstLetter(project.name)}</p>
             </div>
         </Link>
@@ -163,70 +161,74 @@ const PromotionPage: React.FC = () => {
     }, [promotion_id])
 
     return (
-        <div>
+        <div className="min-h-screen bg-gray-50">
             <NavBar/>
-            <div className="flex">
-                <div className="flex-row">
-                    <div className="flex-col">
+            <div className="container mx-auto p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-6">
                         <PromotionDetailsComponent promotion_id={promotion_id}/>
-                        <div className="flex-col">
-                            <h2>Students</h2>
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-800">Students</h2>
                             <div className="divider"></div>
-
                             {studentsLoading ? (
                                 <p>Loading students...</p>
                             ) : studentsError ? (
-                                <p>{studentsError}</p>
-                            ) : students && students.length > 0 ? (
+                                <p className="text-red-600">{studentsError}</p>
+                            ) : students.length > 0 ? (
                                 students.map((student) => (
                                     <StudentComponent key={student.id} student={student}
                                                       onDelete={() => {
-                                                            setSelectedStudent(student);
-                                                          showModal("delete_student_modal")
+                                                          setSelectedStudent(student);
+                                                          showModal("delete_student_modal");
                                                       }}
-                                                        onUpdate={async () => {
-                                                            const status = await updateStudent(student.id, student)
-                                                            if (status === 200) {
-                                                                const updatedStudents = students.map(s => s.id === student.id ? student : s);
-                                                                setStudents(updatedStudents);
-                                                            }
-                                                        }}
+                                                      onUpdate={async () => {
+                                                          const status = await updateStudent(student.id, student);
+                                                          if (status === 200) {
+                                                              const updatedStudents = students.map(s => s.id === student.id ? student : s);
+                                                              setStudents(updatedStudents);
+                                                          }
+                                                      }}
                                     />
                                 ))
                             ) : (
-                                <p>No students found</p>
+                                <p className="text-gray-500">No students found</p>
                             )}
-                            <NewStudentModal students={students} setStudents={setStudents} promotion_id={promotion_id} />
-                            <button onClick={() => showModal("new_student_modal")}>
-                                <FaPlus className="size-10"/>
-                            </button>
-                            <DeleteStudentModal students={students} setStudents={setStudents} student={selectedStudent} />
+                            <div className="flex justify-end mt-4">
+                                <button onClick={() => showModal("new_student_modal")}
+                                        className="bg-blue-500 text-white rounded-full p-3 shadow hover:bg-blue-600 transition">
+                                    <FaPlus/>
+                                </button>
+                            </div>
+                            <NewStudentModal students={students} setStudents={setStudents} promotion_id={promotion_id}/>
+                            <DeleteStudentModal students={students} setStudents={setStudents} student={selectedStudent}/>
                         </div>
                     </div>
-                    <div className="flex-col">
-                        <h2>Projects</h2>
+                    <div className="space-y-6">
+                        <h2 className="text-xl font-semibold text-gray-800">Projects</h2>
                         <div className="divider"></div>
-
                         {projectsLoading ? (
                             <p>Loading projects...</p>
                         ) : projectsError ? (
-                            <p>{projectsError}</p>
-                        ) : projects && projects.length > 0 ? (
+                            <p className="text-red-600">{projectsError}</p>
+                        ) : projects.length > 0 ? (
                             projects.map((project) => (
-                                <ProjectComponent key={project.id} project={project} />
+                                <ProjectComponent key={project.id} project={project}/>
                             ))
                         ) : (
-                            <p>No projects found</p>
+                            <p className="text-gray-500">No projects found</p>
                         )}
-                        <NewProjectModal projects={projects} setProjects={setProjects} promotion_id={promotion_id} />
-                        <button onClick={() => showModal("new_project_modal")}>
-                            <FaPlus className="size-10"/>
-                        </button>
+                        <div className="flex justify-end mt-4">
+                            <button onClick={() => showModal("new_project_modal")}
+                                    className="bg-blue-500 text-white rounded-full p-3 shadow hover:bg-blue-600 transition">
+                                <FaPlus/>
+                            </button>
+                        </div>
+                        <NewProjectModal projects={projects} setProjects={setProjects} promotion_id={promotion_id}/>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
 export default PromotionPage;

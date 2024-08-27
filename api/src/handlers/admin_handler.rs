@@ -77,7 +77,7 @@ pub async fn update_main_config_route(data: web::Data<AppState>, updated_config:
         Ok(response) => match response {
             Ok(_) => {
                 let config_update = get_main_config(&data.database_pool.clone().as_ref().clone());
-                return match config_update {
+                match config_update {
                     Ok(main_config) => {
                         let mut config = data.config.write();
                         config.main_config = main_config.clone();

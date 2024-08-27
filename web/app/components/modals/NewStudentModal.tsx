@@ -57,62 +57,53 @@ const NewStudentModal: React.FC<NewStudentModalProps> = ({students, setStudents,
 
     return (
         <dialog id="new_student_modal" className="modal">
-            <div className="modal-box">
-                <h3 className="font-bold text-lg">Add a student</h3>
+            <div className="modal-box rounded-lg shadow-lg bg-gray-200">
+                <h3 className="font-bold text-xl text-gray-800">Add a Student</h3>
                 <div className="divider"></div>
                 {loading ? (
                     <p>Loading...</p>
                 ) : error ? (
-                    <p style={{color: "red"}}>{error}</p>
-                ): null}
-                <form onSubmit={handleSubmit} className={"flex flex-col"}>
-                    <div className="my-5 flex-row ">
-                        <input
-                            type="text"
-                            placeholder="Student name"
-                            name="name"
-                            id="name"
-                            value={formData.name}
-                            required
-                            maxLength={64}
-                            onChange={handleInputChange}
-                            className="input input-bordered w-full max-w-xs"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Student surname"
-                            name="surname"
-                            id="surname"
-                            value={formData.surname}
-                            required
-                            maxLength={64}
-                            onChange={handleInputChange}
-                            className="input input-bordered w-full max-w-xs"
-                        />
-                    </div>
+                    <p className="text-red-600">{error}</p>
+                ) : null}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <input
+                        type="text"
+                        placeholder="Student name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-200 transition"
+                    />
+                    <input
+                        type="text"
+                        placeholder="Student surname"
+                        name="surname"
+                        value={formData.surname}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-200 transition"
+                    />
                     <input
                         type="email"
                         placeholder="Student email"
                         name="email"
-                        id="email"
                         value={formData.email}
-                        required
-                        maxLength={128}
                         onChange={handleInputChange}
-                        className="input input-bordered w-full max-w-xs"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-200 transition"
                     />
-                    <div className="my-4 flex justify-end w-full">
-                        <button type={"submit"}
-                                className={"flex- rounded-full hover:bg-base-200 px-4 py-2 font-bold w-32"}>
+                    <div className="flex justify-end space-x-4">
+                        <button type="button" onClick={() => hideModal("new_student_modal")}
+                                className="bg-gray-300 text-gray-700 rounded-lg px-4 py-2 hover:bg-gray-400 transition">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                className="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition">
                             Submit
                         </button>
                     </div>
                 </form>
             </div>
-            <form method="dialog" className="modal-backdrop">
-                <button>close</button>
-            </form>
         </dialog>
+
     )
 }
 

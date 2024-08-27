@@ -22,7 +22,6 @@ use infrastructure::DBPool;
 use shared::app_state_model::AppState;
 use shared::error_models::{APIError, DBError, InternalError, ServerError, UnauthorizedError, UserError};
 use shared::token_models::UserClaims;
-use std::env;
 use uuid::Uuid;
 
 /// Register a new user
@@ -188,8 +187,6 @@ async fn login_route(
         let mfa_code_id = create_mfa_code(&conn, new_mfa_code)?;
 
         // Send email
-        let web_url = env::var("WEB_URL").unwrap_or("http://localhost:3000".to_string());
-        let url = format!("{}/login/code/{}", web_url, mfa_code_id);
         let mail = build_mail(MailProps {
             from: "Bitbox <no-reply@sigma-bot.fr>".to_string(),
             to: user.email.clone(),

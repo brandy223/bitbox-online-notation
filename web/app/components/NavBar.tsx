@@ -1,34 +1,33 @@
-'use client';
-
 import React from "react";
-import {useRouter} from 'next/navigation'
-import {FaGear, FaHouse, FaRightFromBracket} from "react-icons/fa6";
+import Link from "next/link";
+import {useRouter} from "next/navigation";
 
-const Navbar: React.FC = () => {
+const NavBar: React.FC = () => {
     const router = useRouter();
 
+    const logout = async () => {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+            method: "POST",
+            credentials: "include",
+        });
+        router.push("/login");
+    };
+
     return (
-        <div className="navbar bg-base-200">
-            <div className="navbar-start">
-                <button className="btn btn-ghost btn-circle ml-3" onClick={() => router.push("/")}>
-                    <FaHouse className={"size-3/4"}/>
+        <nav className="bg-blue-600 text-white p-4 shadow-md">
+            <div className="container mx-auto flex justify-between items-center">
+                <Link href="/" className="text-xl font-bold hover:text-blue-200">
+                    Home
+                </Link>
+                <button
+                    onClick={logout}
+                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                >
+                    Logout
                 </button>
             </div>
-            <div className="navbar-center">
-                <a className="btn btn-ghost text-xl">Bitbox</a>
-            </div>
-            <div className="navbar-end">
-                <button className="btn btn-ghost btn-circle" onClick={() => router.push("/parameters")}>
-                    <FaGear className={"size-1/2"}/>
-                </button>
-                <button className="btn btn-ghost btn-circle" onClick={() => {
-                    router.push("/login")
-                }}>
-                    <FaRightFromBracket className={"size-1/2"}/>
-                </button>
-            </div>
-        </div>
+        </nav>
     );
 };
 
-export default Navbar;
+export default NavBar;

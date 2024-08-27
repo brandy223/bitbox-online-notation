@@ -43,7 +43,7 @@ pub fn create_user_config(conn: &DBPool, new_user_config: NewUserConfig) -> Resu
 pub fn update_main_config(conn: &DBPool, updated_main_config: UpdatedMainConfig) -> Result<(), DBError> {
     use domain::schema::main_config::dsl::*;
 
-    let id_ = get_main_config(&conn).unwrap().id;
+    let id_ = get_main_config(&conn)?.id;
 
     diesel::update(main_config.filter(id.eq(id_)))
         .set(&updated_main_config)

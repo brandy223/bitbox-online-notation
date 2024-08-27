@@ -4,7 +4,6 @@ use diesel::result::Error as DBError;
 use domain::models::marks::*;
 use domain::models::students::Student;
 use infrastructure::DBPool;
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 fn get_all_marks_of_project(conn: &DBPool, project_id_: Uuid) -> Result<Vec<Mark>, DBError> {

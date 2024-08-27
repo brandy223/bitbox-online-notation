@@ -1,7 +1,7 @@
-import React, {useState} from "react";
-import {Student} from "@/app/api/models/student";
-import {FaCheck, FaEdit, FaTimes} from "react-icons/fa";
 import {capitalizeFirstLetter} from "@/app/utils";
+import {FaCheck, FaEdit, FaTimes} from "react-icons/fa";
+import {useState} from "react";
+import {Student} from "@/app/api/models/student";
 
 const StudentComponent: React.FC<{
     student: Student,
@@ -23,10 +23,10 @@ const StudentComponent: React.FC<{
     };
 
     return (
-        <div className="relative px-4 py-2 border rounded-lg shadow-sm hover:shadow-md transition-shadow group">
+        <div className="relative p-4 bg-white border rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
             <button
                 onClick={() => onDelete(student.id)}
-                className="absolute top-2 left-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
                 title="Delete student"
             >
                 <FaTimes />
@@ -60,15 +60,16 @@ const StudentComponent: React.FC<{
                     />
                     <button
                         type="submit"
-                        className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                        className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 flex items-center space-x-1"
                     >
-                        <FaCheck /> Save
+                        <FaCheck /><span>Save</span>
                     </button>
                 </form>
             ) : (
                 <>
-                    <p className="font-bold">{student.name.toUpperCase()}</p>
+                    <p className="font-bold text-lg">{student.name.toUpperCase()}</p>
                     <p>{capitalizeFirstLetter(student.surname)}</p>
+                    <p className="text-sm text-gray-600">{student.email}</p>
                 </>
             )}
 
@@ -78,12 +79,11 @@ const StudentComponent: React.FC<{
                     className="absolute bottom-2 left-2 text-blue-500 hover:text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity"
                     title="Edit student"
                 >
-                    <FaEdit /> Edit
+                    <FaEdit /><span>Edit</span>
                 </button>
             )}
         </div>
     );
 };
-
 
 export default StudentComponent;

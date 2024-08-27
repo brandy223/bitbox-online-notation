@@ -46,5 +46,5 @@ fn calculate_average(numbers: &[f64]) -> f64 {
     let sum: f64 = numbers.iter().sum();
     let count = numbers.len() as f64;
 
-    sum as f64 / count
+    sum / count
 }

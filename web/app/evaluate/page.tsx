@@ -88,18 +88,20 @@ const EvaluationPage: React.FC = () => {
     };
 
     return (
-        <div>
-            <h1>People to mark</h1>
+        <div className="min-h-screen bg-gray-100 p-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-8">People to Mark</h1>
             {loading ? (
-                <p>Loading...</p>
+                <p className="text-center text-gray-600">Loading...</p>
             ) : error ? (
-                <p>{error}</p>
+                <p className="text-center text-red-600">{error}</p>
             ) : (
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="space-y-6">
                     {minimalGroupStudents.students.map((student, index) => (
-                        <div key={student.student_id} style={{ marginBottom: '1rem' }}>
-                            <label>
-                                {student.name} {student.surname}:
+                        <div key={student.student_id} className="bg-white p-6 rounded-lg shadow-md">
+                            <label className="block text-lg font-medium text-gray-700 mb-4">
+                                {student.name} {student.surname}
+                            </label>
+                            <div className="flex items-center space-x-4">
                                 <input
                                     type="number"
                                     value={grades[index]?.mark || 0}
@@ -107,25 +109,32 @@ const EvaluationPage: React.FC = () => {
                                     min="0"
                                     max="20"
                                     required
-                                    style={{ marginLeft: '1rem', marginRight: '1rem' }}
+                                    className="w-20 p-2 border border-gray-300 rounded-md text-gray-800 bg-gray-100"
                                 />
                                 <input
                                     type="text"
                                     placeholder="Add a comment (optional)"
                                     value={grades[index]?.comment || ""}
                                     onChange={(e) => handleCommentChange(student.student_id, e.target.value)}
-                                    style={{ width: '300px' }}
+                                    className="flex-grow p-2 border border-gray-300 rounded-md text-gray-800 bg-gray-100"
                                 />
-                            </label>
+                            </div>
                         </div>
                     ))}
-                    <button type="submit">Submit Grades</button>
+                    <div className="flex justify-end">
+                        <button
+                            type="submit"
+                            className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-500 transition-all"
+                        >
+                            Submit Grades
+                        </button>
+                    </div>
                 </form>
             )}
-            {submitSuccess && <p>Grades submitted successfully!</p>}
-            {submitError && <p>{submitError}</p>}
+            {submitSuccess && <p className="text-center text-green-600 mt-4">Grades submitted successfully!</p>}
+            {submitError && <p className="text-center text-red-600 mt-4">{submitError}</p>}
         </div>
-    )
+    );
 }
 
 export default EvaluationPage;

@@ -76,14 +76,14 @@ pub fn get_groups_from_project_id(conn: &DBPool, project_id_: Uuid) -> Result<Ve
 }
 
 pub fn get_groups_and_students_from_project_id(conn: &DBPool, project_id_: Uuid) -> Result<Vec<ProjectGroup>, DBError> {
-    let groups = get_groups_from_project_id(conn, project_id_).unwrap();
+    let groups = get_groups_from_project_id(conn, project_id_)?;
     let groups_ids: Vec<Uuid> = groups.iter().map(|group| group.id).collect();
 
     let mut result: Vec<ProjectGroup> = Vec::new();
     for group_id in groups_ids {
         let students = get_students_and_marks_from_group(conn, group_id)?;
         result.push(ProjectGroup {
-            group: get_group_by_id(conn, group_id).unwrap(),
+            group: get_group_by_id(conn, group_id)?,
             students
         });
     }
@@ -104,7 +104,7 @@ pub fn get_group_from_student_and_project_id(conn: &DBPool, student_id_: Uuid, p
         .optional();
 
     match group_id_ {
-        Ok(Some(group_id_)) => Ok(Some(get_group_by_id(conn, group_id_).unwrap())),
+        Ok(Some(group_id_)) => Ok(Some(get_group_by_id(conn, group_id_)?)),
         _ => Ok(None)
     }
 }
@@ -410,7 +410,7 @@ pub mod test {
 
         let (project_id, _) = test_create_project();
 
-        let students = get_students_without_group(&context.conn, project_id).unwrap();
+        get_students_without_group(&context.conn, project_id).unwrap();
     }
 
     #[test]
@@ -467,7 +467,7 @@ pub mod test {
     fn test_remove_student_from_groups() {
         let context = TestContext::new();
 
-        let (group_id, student_id) = test_create_group_student();
+        let (_, student_id) = test_create_group_student();
 
         remove_students_from_groups(&context.conn, student_id).unwrap();
     }
